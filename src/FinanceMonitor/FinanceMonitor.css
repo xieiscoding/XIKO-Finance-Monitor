@@ -1,0 +1,556 @@
+﻿/* ==========================================================
+   独立页面布局（独立部署版新增）
+   ========================================================== */
+
+.fm-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 30px clamp(14px, 4vw, 48px) 36px;
+}
+
+.fm-page__header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.fm-page__title {
+  margin: 0;
+  font-size: clamp(22px, 3vw, 30px);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #f4f6fa;
+}
+
+.fm-page__subtitle {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: rgba(235, 238, 245, 0.62);
+  letter-spacing: 0.03em;
+}
+
+.fm-page__footer {
+  margin-top: 18px;
+  text-align: center;
+  font-size: 11.5px;
+  color: rgba(235, 238, 245, 0.5);
+  letter-spacing: 0.02em;
+}
+
+/* ==========================================================
+   XIKO Finance Monitor 页面
+   中部：一整块圆角磨砂大矩形，正中一条灰色稍淡实线分出左右区域
+   ========================================================== */
+/* ==========================================================
+   XIKO Finance Monitor 页面
+   中部：一整块圆角磨砂大矩形，正中一条灰色稍淡实线分出左右区域
+   ========================================================== */
+
+.fm-panel {
+  position: relative;
+  flex: 1;
+  min-height: 700px;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  border-radius: 26px;
+  background: rgba(255, 255, 255, 0.14);
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
+  backdrop-filter: blur(10px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 4px 14px rgba(0, 0, 0, 0.10);
+  overflow: hidden;
+  animation: page-fade-in 0.45s ease both;
+  transition:
+    box-shadow 0.35s ease,
+    background-color 0.35s ease,
+    -webkit-backdrop-filter 0.35s ease,
+    backdrop-filter 0.35s ease;
+}
+
+/* 悬停：高斯模糊变强 + 边缘高光更亮（与期权/雪球计算器的磨砂卡片一致，但不做上浮） */
+.fm-panel:hover {
+  background: rgba(255, 255, 255, 0.20);
+  -webkit-backdrop-filter: blur(20px) saturate(170%);
+  backdrop-filter: blur(20px) saturate(170%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    0 24px 48px rgba(0, 0, 0, 0.32),
+    0 10px 18px rgba(0, 0, 0, 0.22);
+}
+
+/* 正中分割线：灰色稍淡的实线 */
+.fm-panel__divider {
+  position: absolute;
+  left: 66.6667%;
+  top: 24px;
+  bottom: 24px;
+  width: 1px;
+  background: rgba(215, 221, 231, 0.32);
+  pointer-events: none;
+}
+
+.fm-panel__left {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 22px 26px 14px;
+  min-width: 0;
+}
+
+/* 右侧 A 股指数区：上下两个半区（沪/科、深/创），中间横线分割 */
+.fm-panel__right {
+  position: relative;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 22px 24px 18px;
+}
+
+/* 右侧上下半区之间的横向分割线（灰色稍淡实线） */
+.fm-panel__divider-h {
+  height: 1px;
+  margin: 12px 2px;
+  background: rgba(215, 221, 231, 0.32);
+  flex-shrink: 0;
+}
+
+/* ===== 指数半区（市场标签 + 3x4 卡片网格） ===== */
+.fm-index-half {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.fm-index-half__tags {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-shrink: 0;
+}
+
+/* 市场标签（"沪""科""深""创"）：左上方的正方形小格 */
+.fm-index-half__tag {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border-radius: 6px;
+  font-size: 11px;
+  color: rgba(238, 242, 248, 0.92);
+  background: rgba(255, 255, 255, 0.13);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  user-select: none;
+}
+
+.fm-index-half__grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: 34px; /* 行数随卡片数量自适应（沪 5 行 / 深 6 行） */
+  column-gap: 8px;
+  row-gap: 16px; /* 行间距加大，卡片更矮更清爽 */
+  align-content: center; /* 行高固定、整体垂直居中，卡片不再撑满半区 */
+}
+
+/* ===== 指数翻转卡片（长条圆角矩形，灰色虚线分左右） ===== */
+.fm-card {
+  position: relative;
+  min-height: 0;
+  perspective: 640px;
+}
+
+.fm-card__inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.55s cubic-bezier(0.34, 0.1, 0.22, 1);
+}
+
+/* 悬停绕水平横轴翻转 180° 至背面 */
+.fm-card:hover .fm-card__inner {
+  transform: rotateX(180deg);
+}
+
+.fm-card__face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: stretch;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  overflow: hidden;
+}
+
+.fm-card__face--back {
+  transform: rotateX(180deg);
+}
+
+/* 卡片左右两半：中间一条灰色虚线 */
+.fm-card__half {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+}
+
+.fm-card__half--right {
+  border-left: 1px dashed rgba(215, 221, 231, 0.4);
+}
+
+.fm-card__name {
+  font-size: 8px;
+  color: rgba(238, 242, 248, 0.92);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fm-card__code {
+  font-size: 8px;
+  color: rgba(238, 242, 248, 0.66);
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.fm-card__num {
+  font-size: 8px;
+  font-weight: 700;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 轮播卡槽：切换时整体淡出 / 淡入。
+   槽本身是网格项会被拉伸到行高，但内部卡片内容全是绝对定位、固有高度为 0，
+   必须显式给卡片撑满高度，否则卡片塌缩不可见 */
+.fm-card-slot {
+  min-height: 0;
+  opacity: 1;
+  transition: opacity 0.32s ease;
+}
+
+.fm-card-slot .fm-card {
+  height: 100%;
+}
+
+.fm-card-slot--fading {
+  opacity: 0;
+}
+
+/* ===== 地球部件 ===== */
+
+.fm-globe {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 12px;
+  min-height: 0;
+}
+
+/* 地球列：画布在上，状态行紧贴画布正下方（只相对地球画布居中） */
+.fm-globe__col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* 地球画布容器（WebGL + CSS3D 双层叠加） */
+.fm-globe__host {
+  position: relative;
+  flex: 1;
+  min-height: 480px;
+  overflow: hidden;
+  border-radius: 18px;
+  touch-action: none;
+}
+
+.fm-globe__canvas,
+.fm-globe__css {
+  position: absolute;
+  inset: 0;
+}
+
+.fm-globe__canvas {
+  cursor: grab;
+}
+
+.fm-globe__canvas--grabbing {
+  cursor: grabbing;
+}
+
+/* CSS3D 层本身不拦截鼠标，只有图标可交互 */
+.fm-globe__css {
+  pointer-events: none;
+}
+
+/* ===== 卫星 / 极简切换：圆角方形 + 内嵌横向小胶囊（默认停在"卫星"一侧） ===== */
+
+.fm-globe-toggle {
+  position: relative;
+  margin: auto 0;
+  width: 50px;
+  height: 78px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 0;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(16, 20, 28, 0.45);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.fm-globe-toggle__opt {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  text-indent: 0.02em;
+  color: rgba(255, 255, 255, 0.62);
+  position: relative;
+  z-index: 1;
+  transition: color 0.25s ease;
+  user-select: none;
+}
+
+/* 当前激活一侧的文字用深色（衬在亮色短胶囊上） */
+.fm-globe-toggle__opt--active {
+  color: #10141c;
+  font-weight: 700;
+}
+
+/* 横向小胶囊：点击后滑到另一侧（圆角与外层圆角方形同心匹配） */
+.fm-globe-toggle__knob {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  height: calc(50% - 5px);
+  border-radius: 10px;
+  background: linear-gradient(180deg, #f4f6fa, #cfd6e2);
+  box-shadow: 0 2px 10px rgba(8, 10, 16, 0.45);
+  transition: top 0.3s cubic-bezier(0.45, 0.05, 0.35, 1.18);
+}
+
+.fm-globe-toggle__knob--min {
+  top: calc(50% + 1px);
+}
+
+/* ===== 指数圆形图标（贴在球面上、略微悬浮） ===== */
+
+.fm-marker {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  position: relative;
+  /* 高级灰：高光 + 渐变 */
+  background:
+    radial-gradient(circle at 30% 24%, rgba(255, 255, 255, 0.30), rgba(255, 255, 255, 0) 44%),
+    linear-gradient(160deg, #7a808c 0%, #575c68 55%, #3e424c 100%);
+  border: 1px solid rgba(255, 255, 255, 0.36);
+  box-shadow:
+    0 6px 18px rgba(8, 10, 16, 0.45),
+    inset 0 1px 2px rgba(255, 255, 255, 0.25);
+  color: #f4f6fa;
+  text-align: center;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.fm-marker__region {
+  font-size: 7px;
+  line-height: 1.15;
+  opacity: 0.92;
+  max-width: 38px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fm-marker__value {
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1.12;
+  color: rgb(214, 218, 226);
+}
+
+.fm-marker__pct {
+  font-size: 7px;
+  font-weight: 600;
+  line-height: 1.15;
+  color: rgb(214, 218, 226);
+}
+
+/* 交易时段内：外圈每 3s 向外扩散一圈蓝色 */
+.fm-marker__pulse {
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  border: 2px solid rgba(77, 163, 255, 0.95);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.fm-marker.is-live .fm-marker__pulse {
+  animation: fm-pulse 3s ease-out infinite;
+}
+
+@keyframes fm-pulse {
+  0% {
+    transform: scale(0.94);
+    opacity: 0.95;
+  }
+  70% {
+    opacity: 0.12;
+  }
+  100% {
+    transform: scale(1.75);
+    opacity: 0;
+  }
+}
+
+/* ===== 悬浮信息框（跟随鼠标，磨砂圆角矩形） ===== */
+
+.fm-tip {
+  position: fixed;
+  z-index: 1200;
+  min-width: 195px;
+  max-width: 270px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(24, 28, 38, 0.66);
+  backdrop-filter: blur(16px) saturate(1.3);
+  -webkit-backdrop-filter: blur(16px) saturate(1.3);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 10px 30px rgba(8, 10, 16, 0.4);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.12s ease;
+}
+
+.fm-tip--open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.fm-tip__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  font-size: 11px;
+  line-height: 1.75;
+}
+
+.fm-tip__k {
+  color: rgba(235, 238, 245, 0.55);
+  white-space: nowrap;
+}
+
+.fm-tip__v {
+  color: #f2f5fa;
+  text-align: right;
+  word-break: break-all;
+}
+
+/* ===== 状态行与错误提示 ===== */
+
+.fm-status {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 11.5px;
+  color: rgba(235, 238, 245, 0.5);
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
+.fm-status__err {
+  margin-left: 8px;
+  color: #ffb4a8;
+}
+
+/* 状态栏数据来源链接：下划线可点击，悬停过渡到苹果蓝（与 Welcome 进入首页一致） */
+.fm-status__link {
+  color: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+  transition: color 0.45s ease;
+}
+
+.fm-status__link:hover {
+  color: #0071e3;
+}
+
+.fm-error {
+  margin-top: 12px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(255, 90, 70, 0.12);
+  border: 1px solid rgba(255, 120, 100, 0.35);
+  color: #ffd7cf;
+  font-size: 12.5px;
+}
+
+/* ===== 窄屏：上下叠放，分割线改为横向 ===== */
+@media (max-width: 900px) {
+  .fm-panel {
+    grid-template-columns: 1fr;
+    min-height: 560px;
+  }
+
+  .fm-panel__divider {
+    left: 24px;
+    right: 24px;
+    top: auto;
+    bottom: 480px;
+    width: auto;
+    height: 1px;
+  }
+
+  .fm-panel__right {
+    min-height: 480px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fm-panel {
+    animation: none;
+  }
+
+  .fm-marker.is-live .fm-marker__pulse {
+    animation: none;
+  }
+
+  .fm-card__inner,
+  .fm-card-slot {
+    transition: none;
+  }
+}
+
